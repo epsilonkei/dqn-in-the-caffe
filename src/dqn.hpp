@@ -42,13 +42,15 @@ public:
       const ActionVect& legal_actions,
       const std::string& solver_param,
       const int replay_memory_capacity,
-      const double gamma) :
+      const double gamma,
+      const bool verbose) :
         legal_actions_(legal_actions),
         solver_param_(solver_param),
         replay_memory_capacity_(replay_memory_capacity),
         gamma_(gamma),
         current_iter_(0),
-        random_engine(0) {}
+        random_engine(0),
+        verbose_(verbose){}
 
   /**
    * Initialize DQN. Must be called before calling any other method.
@@ -106,6 +108,7 @@ private:
   MemoryDataLayerSp filter_input_layer_;
   TargetLayerInputData dummy_input_data_;
   std::mt19937 random_engine;
+  bool verbose_;
 };
 
 /**

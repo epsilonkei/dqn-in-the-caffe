@@ -6,6 +6,7 @@
 #include "prettyprint.hpp"
 #include "dqn.hpp"
 
+DEFINE_bool(verbose, false, "Verbose Output for each frame");
 DEFINE_bool(gpu, false, "Use GPU to brew Caffe");
 DEFINE_bool(gui, false, "Open a GUI window");
 DEFINE_string(rom, "breakout.bin", "Atari 2600 ROM to play");
@@ -20,6 +21,7 @@ DEFINE_string(model, "", "Model file to load");
 DEFINE_bool(evaluate, false, "Evaluation mode: only playing a game, no updates");
 DEFINE_double(evaluate_with_epsilon, 0.05, "Epsilon value to be used in evaluation mode");
 DEFINE_double(repeat_games, 1, "Number of games played in evaluation mode");
+DEFINE_int32(eval_epis_per_epoch, 5000, "Number of episodes per epoch for evaluating while training");
 
 double CalculateEpsilon(const int iter) {
   if (iter < FLAGS_explore) {
@@ -41,7 +43,9 @@ double PlayOneEpisode(
   std::deque<dqn::FrameDataSp> past_frames;
   auto total_score = 0.0;
   for (auto frame = 0; !ale.game_over(); ++frame) {
-    std::cout << "frame: " << frame << std::endl;
+    if (FLAGS_verbose) {
+      std::cout << "frame: " << frame << std::endl;
+    }
     const auto current_frame = dqn::PreprocessScreen(ale.getScreen());
     if (FLAGS_show_frame) {
       std::cout << dqn::DrawFrame(*current_frame) << std::endl;
@@ -112,7 +116,7 @@ int main(int argc, char** argv) {
   // Get the vector of legal actions
   const auto legal_actions = ale.getMinimalActionSet();
 
-  dqn::DQN dqn(legal_actions, FLAGS_solver, FLAGS_memory, FLAGS_gamma);
+  dqn::DQN dqn(legal_actions, FLAGS_solver, FLAGS_memory, FLAGS_gamma, FLAGS_verbose);
   dqn.Initialize();
 
   if (!FLAGS_model.empty()) {
@@ -124,24 +128,41 @@ int main(int argc, char** argv) {
     dqn.LoadTrainedModel(FLAGS_model);
     auto total_score = 0.0;
     for (auto i = 0; i < FLAGS_repeat_games; ++i) {
-      std::cout << "game: " << i << std::endl;
+      std::cout << "Game: " << i << std::endl;
       const auto score =
           PlayOneEpisode(ale, dqn, FLAGS_evaluate_with_epsilon, false);
-      std::cout << "score: " << score << std::endl;
+      std::cout << "Score: " << score << std::endl;
       total_score += score;
     }
-    std::cout << "total_score: " << total_score << std::endl;
+    std::cout << "Total_score: " << total_score << std::endl;
     return 0;
   }
 
+  int epoch = 0;
+  std::ofstream training_data(".//training_log.csv");
+  training_data << FLAGS_rom << "," << FLAGS_eval_epis_per_epoch << "," << std::endl;
+  training_data << "Epoch,Evaluate score,Hours training" << std::endl;
+  caffe::Timer run_timer;
+
   for (auto episode = 0;; episode++) {
-    std::cout << "episode: " << episode << std::endl;
+    if (FLAGS_verbose)
+      std::cout << "Episode: " << episode << std::endl;
+    run_timer.Start();
+
     const auto epsilon = CalculateEpsilon(dqn.current_iteration());
     PlayOneEpisode(ale, dqn, epsilon, true);
+
+    // Evaluate after every 10 episodes evaluate the current strength
     if (dqn.current_iteration() % 10 == 0) {
-      // After every 10 episodes, evaluate the current strength
       const auto eval_score = PlayOneEpisode(ale, dqn, 0.05, false);
-      std::cout << "evaluation score: " << eval_score << std::endl;
+      std::cout << "Evaluation score: " << eval_score << std::endl;
+      //  Output to log after every N episodes
+      if (dqn.current_iteration() % FLAGS_eval_epis_per_epoch == 0) {
+        training_data << epoch << ", " << eval_score << ", " <<
+          run_timer.MilliSeconds() / 1000. / 3600.;
+        epoch++;
+      }
     }
   }
+  training_data.close();
 };
