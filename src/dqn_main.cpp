@@ -140,7 +140,8 @@ int main(int argc, char** argv) {
 
   int epoch = 0;
   std::ofstream training_data(".//training_log.csv");
-  training_data << FLAGS_rom << "," << FLAGS_eval_epis_per_epoch << "," << std::endl;
+  std::ofstream rom_info(".//save_model/rom_info.txt");
+  rom_info << FLAGS_rom << std::endl;
   training_data << "Epoch,Evaluate score,Hours training" << std::endl;
   caffe::Timer run_timer;
 
@@ -159,7 +160,7 @@ int main(int argc, char** argv) {
       //  Output to log after every N episodes
       if (dqn.current_iteration() % FLAGS_eval_epis_per_epoch == 0) {
         training_data << epoch << ", " << eval_score << ", " <<
-          run_timer.MilliSeconds() / 1000. / 3600.;
+          run_timer.MilliSeconds() / 1000. / 3600. << std::endl;
         epoch++;
       }
     }
