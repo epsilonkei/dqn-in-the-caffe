@@ -178,11 +178,12 @@ void DQN::Initialize() {
   // Initialize net and solver
   caffe::SolverParameter solver_param;
   caffe::ReadProtoFromTextFileOrDie(solver_param_, &solver_param);
-  solver_.reset(caffe::GetSolver<float>(solver_param));
+  // solver_.reset(caffe::GetSolver<float>(solver_param));
+  solver_.reset(caffe::SolverRegistry<float>::CreateSolver(solver_param));
   net_ = solver_->net();
 
   // Cache pointers to blobs that hold Q values
-  q_values_blob_ = net_->blob_by_name("q_values");
+  q_values_blob_ = net_->blob_by_name(q_values_blob_name);
 
   // Initialize dummy input data with 0
   std::fill(dummy_input_data_.begin(), dummy_input_data_.end(), 0.0);
@@ -190,26 +191,26 @@ void DQN::Initialize() {
   // Cache pointers to input layers
   frames_input_layer_ =
       boost::dynamic_pointer_cast<caffe::MemoryDataLayer<float>>(
-          net_->layer_by_name("frames_input_layer"));
+          net_->layer_by_name(frames_layer_name));
   assert(frames_input_layer_);
   assert(HasBlobSize(
-      *net_->blob_by_name("frames"),
+      *net_->blob_by_name(train_frames_blob_name),
       kMinibatchSize,
       kInputFrameCount,
       kCroppedFrameSize,
       kCroppedFrameSize));
   target_input_layer_ =
       boost::dynamic_pointer_cast<caffe::MemoryDataLayer<float>>(
-          net_->layer_by_name("target_input_layer"));
+          net_->layer_by_name(target_layer_name));
   assert(target_input_layer_);
   assert(HasBlobSize(
-      *net_->blob_by_name("target"), kMinibatchSize, kOutputCount, 1, 1));
+      *net_->blob_by_name(target_blob_name), kMinibatchSize, kOutputCount, 1, 1));
   filter_input_layer_ =
       boost::dynamic_pointer_cast<caffe::MemoryDataLayer<float>>(
-          net_->layer_by_name("filter_input_layer"));
+          net_->layer_by_name(filter_layer_name));
   assert(filter_input_layer_);
   assert(HasBlobSize(
-      *net_->blob_by_name("filter"), kMinibatchSize, kOutputCount, 1, 1));
+      *net_->blob_by_name(filter_blob_name), kMinibatchSize, kOutputCount, 1, 1));
 }
 
 Action DQN::SelectAction(const InputFrames& last_frames, const double epsilon) {
@@ -251,7 +252,7 @@ std::vector<std::pair<Action, float>> DQN::SelectActionGreedily(
     }
   }
   InputDataIntoLayers(frames_input, dummy_input_data_, dummy_input_data_);
-  net_->ForwardPrefilled(nullptr);
+  net_->Forward(nullptr);
 
   std::vector<std::pair<Action, float>> results;
   results.reserve(last_frames_batch.size());

@@ -8,6 +8,7 @@
 #include <vector>
 #include <ale_interface.hpp>
 #include <caffe/caffe.hpp>
+#include <caffe/layers/memory_data_layer.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/optional.hpp>
 
@@ -23,6 +24,16 @@ constexpr auto kMinibatchSize = 32;
 constexpr auto kMinibatchDataSize = kInputDataSize * kMinibatchSize;
 constexpr auto kGamma = 0.95f;
 constexpr auto kOutputCount = 18;
+
+constexpr auto frames_layer_name = "frames_input_layer";
+constexpr auto target_layer_name = "target_input_layer";
+constexpr auto filter_layer_name = "filter_input_layer";
+
+constexpr auto train_frames_blob_name = "frames";
+constexpr auto test_frames_blob_name  = "all_frames";
+constexpr auto target_blob_name       = "target";
+constexpr auto filter_blob_name       = "filter";
+constexpr auto q_values_blob_name     = "q_values";
 
 using FrameData = std::array<uint8_t, kCroppedFrameDataSize>;
 using FrameDataSp = std::shared_ptr<FrameData>;
