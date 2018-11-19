@@ -33,6 +33,7 @@
 
 # Folder
 build*
+save_model*
 
 # Environment
 *~
