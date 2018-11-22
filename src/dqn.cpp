@@ -109,8 +109,7 @@ namespace dqn {
                    y_ratio_in_resulting_pixel >= 0.0 &&
                    y_ratio_in_resulting_pixel <= 1.0);
             const auto grayscale =
-              PixelToGrayscale(
-                               raw_pixels[static_cast<int>(y * kRawFrameWidth + x)]);
+              PixelToGrayscale(raw_pixels[static_cast<int>(y * kRawFrameWidth + x)]);
             resulting_color +=
               (x_ratio_in_resulting_pixel / x_ratio) *
               (y_ratio_in_resulting_pixel / y_ratio) * grayscale;
@@ -134,8 +133,7 @@ namespace dqn {
     return o.str();
   }
 
-  std::string PrintQValues(
-                           const std::vector<float>& q_values, const ActionVect& actions) {
+  std::string PrintQValues(const std::vector<float>& q_values, const ActionVect& actions) {
     assert(!q_values.empty());
     assert(!actions.empty());
     assert(q_values.size() == actions.size());
@@ -158,8 +156,7 @@ namespace dqn {
   }
 
   template <typename Dtype>
-  bool HasBlobSize(
-                   const caffe::Blob<Dtype>& blob,
+  bool HasBlobSize(const caffe::Blob<Dtype>& blob,
                    const int num,
                    const int channels,
                    const int height,
@@ -188,28 +185,19 @@ namespace dqn {
     std::fill(dummy_input_data_.begin(), dummy_input_data_.end(), 0.0);
 
     // Cache pointers to input layers
-    frames_input_layer_ =
-      boost::dynamic_pointer_cast<caffe::MemoryDataLayer<float>>(
-                                                                 net_->layer_by_name(frames_layer_name));
+    frames_input_layer_ = boost::dynamic_pointer_cast<caffe::MemoryDataLayer<float>>(net_->layer_by_name(frames_layer_name));
     assert(frames_input_layer_);
-    assert(HasBlobSize(
-                       *net_->blob_by_name(train_frames_blob_name),
+    assert(HasBlobSize(*net_->blob_by_name(train_frames_blob_name),
                        kMinibatchSize,
                        kInputFrameCount,
                        kCroppedFrameSize,
                        kCroppedFrameSize));
-    target_input_layer_ =
-      boost::dynamic_pointer_cast<caffe::MemoryDataLayer<float>>(
-                                                                 net_->layer_by_name(target_layer_name));
+    target_input_layer_ = boost::dynamic_pointer_cast<caffe::MemoryDataLayer<float>>(net_->layer_by_name(target_layer_name));
     assert(target_input_layer_);
-    assert(HasBlobSize(
-                       *net_->blob_by_name(target_blob_name), kMinibatchSize, kOutputCount, 1, 1));
-    filter_input_layer_ =
-      boost::dynamic_pointer_cast<caffe::MemoryDataLayer<float>>(
-                                                                 net_->layer_by_name(filter_layer_name));
+    assert(HasBlobSize(*net_->blob_by_name(target_blob_name), kMinibatchSize, kOutputCount, 1, 1));
+    filter_input_layer_ = boost::dynamic_pointer_cast<caffe::MemoryDataLayer<float>>(net_->layer_by_name(filter_layer_name));
     assert(filter_input_layer_);
-    assert(HasBlobSize(
-                       *net_->blob_by_name(filter_blob_name), kMinibatchSize, kOutputCount, 1, 1));
+    assert(HasBlobSize(*net_->blob_by_name(filter_blob_name), kMinibatchSize, kOutputCount, 1, 1));
   }
 
   Action DQN::SelectAction(const InputFrames& last_frames, const double epsilon) {
@@ -235,16 +223,14 @@ namespace dqn {
     return SelectActionGreedily(std::vector<InputFrames>{{last_frames}}).front();
   }
 
-  std::vector<std::pair<Action, float>> DQN::SelectActionGreedily(
-                                                                  const std::vector<InputFrames>& last_frames_batch) {
+  std::vector<std::pair<Action, float>> DQN::SelectActionGreedily(const std::vector<InputFrames>& last_frames_batch) {
     assert(last_frames_batch.size() <= kMinibatchSize);
     std::array<float, kMinibatchDataSize> frames_input;
     for (auto i = 0; i < last_frames_batch.size(); ++i) {
       // Input frames to the net and compute Q values for each legal actions
       for (auto j = 0; j < kInputFrameCount; ++j) {
         const auto& frame_data = last_frames_batch[i][j];
-        std::copy(
-                  frame_data->begin(),
+        std::copy(frame_data->begin(),
                   frame_data->end(),
                   frames_input.begin() + i * kInputDataSize +
                   j * kCroppedFrameDataSize);
@@ -263,8 +249,7 @@ namespace dqn {
         return q;
       };
       std::vector<float> q_values(legal_actions_.size());
-      std::transform(
-                     legal_actions_.begin(),
+      std::transform(legal_actions_.begin(),
                      legal_actions_.end(),
                      q_values.begin(),
                      action_evaluator);
@@ -276,9 +261,7 @@ namespace dqn {
 
       // Select the action with the maximum Q value
       const auto max_idx =
-        std::distance(
-                      q_values.begin(),
-                      std::max_element(q_values.begin(), q_values.end()));
+        std::distance(q_values.begin(), std::max_element(q_values.begin(), q_values.end()));
       results.emplace_back(legal_actions_[max_idx], q_values[max_idx]);
     }
     return results;
@@ -300,8 +283,7 @@ namespace dqn {
     transitions.reserve(kMinibatchSize);
     for (auto i = 0; i < kMinibatchSize; ++i) {
       const auto random_transition_idx =
-        std::uniform_int_distribution<int>(0, replay_memory_.size() - 1)(
-                                                                         random_engine);
+        std::uniform_int_distribution<int>(0, replay_memory_.size() - 1)(random_engine);
       transitions.push_back(random_transition_idx);
     }
 
@@ -321,8 +303,7 @@ namespace dqn {
       target_last_frames[kInputFrameCount - 1] = std::get<3>(transition).get();
       target_last_frames_batch.push_back(target_last_frames);
     }
-    const auto actions_and_values =
-      SelectActionGreedily(target_last_frames_batch);
+    const auto actions_and_values = SelectActionGreedily(target_last_frames_batch);
 
     FramesLayerInputData frames_input;
     TargetLayerInputData target_input;
@@ -345,8 +326,7 @@ namespace dqn {
       VLOG(1) << "filter:" << action_to_string(action) << " target:" << target;
       for (auto j = 0; j < kInputFrameCount; ++j) {
         const auto& frame_data = std::get<0>(transition)[j];
-        std::copy(
-                  frame_data->begin(),
+        std::copy(frame_data->begin(),
                   frame_data->end(),
                   frames_input.begin() + i * kInputDataSize +
                   j * kCroppedFrameDataSize);
@@ -365,20 +345,16 @@ namespace dqn {
       net_->layer_by_name("ip2_layer")->blobs().front()->data_at(1, 0, 0, 0);
   }
 
-  void DQN::InputDataIntoLayers(
-                                const FramesLayerInputData& frames_input,
+  void DQN::InputDataIntoLayers(const FramesLayerInputData& frames_input,
                                 const TargetLayerInputData& target_input,
                                 const FilterLayerInputData& filter_input) {
-    frames_input_layer_->Reset(
-                               const_cast<float*>(frames_input.data()),
+    frames_input_layer_->Reset(const_cast<float*>(frames_input.data()),
                                dummy_input_data_.data(),
                                kMinibatchSize);
-    target_input_layer_->Reset(
-                               const_cast<float*>(target_input.data()),
+    target_input_layer_->Reset(const_cast<float*>(target_input.data()),
                                dummy_input_data_.data(),
                                kMinibatchSize);
-    filter_input_layer_->Reset(
-                               const_cast<float*>(filter_input.data()),
+    filter_input_layer_->Reset(const_cast<float*>(filter_input.data()),
                                dummy_input_data_.data(),
                                kMinibatchSize);
   }
