@@ -23,6 +23,7 @@ target_link_libraries(dqn caffe)
 target_link_libraries(dqn glog)
 target_link_libraries(dqn gflags)
 target_link_libraries(dqn ale)
+target_link_libraries(dqn protobuf)
 
 if(APPLE)
   include_directories(/System/Library/Frameworks/vecLib.framework/Versions/Current/Headers)

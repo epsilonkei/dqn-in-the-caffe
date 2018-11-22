@@ -10,4 +10,4 @@ display: 10000
 
 # snapshot intermediate results
 snapshot: 1000000
-snapshot_prefix: "save_model/dqn"
+snapshot_prefix: "dqn"

@@ -64,12 +64,17 @@ namespace dqn {
     /**
      * Initialize DQN. Must be called before calling any other method.
      */
-    void Initialize();
+    void Initialize(std::string log_dir);
 
     /**
      * Load a trained model from a file.
      */
     void LoadTrainedModel(const std::string& model_file);
+
+    /**
+     * Save network's model to file.
+     */
+    void SaveModelToHDF5(const std::string& model_file);
 
     /**
      * Select an action by epsilon-greedy.

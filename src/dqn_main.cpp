@@ -1,8 +1,10 @@
 #include <cmath>
+#include <ctime>
 #include <iostream>
 #include <ale_interface.hpp>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
+#include <sys/stat.h>
 #include "prettyprint.hpp"
 #include "dqn.hpp"
 
@@ -94,6 +96,28 @@ double PlayOneEpisode(ALEInterface& ale,
   return total_score;
 }
 
+void CreateDir(const char* directory) {
+  struct stat sb;
+  if (!stat(directory, &sb) == 0 || !S_ISDIR(sb.st_mode)) {
+    const int dir_err = mkdir(directory, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+      if (dir_err == -1) {
+         std::cerr <<"Error creating log directory!" << std::endl;
+         exit(1);
+      }
+  }
+}
+
+std::string TimeString() {
+  time_t rawtime;
+  struct tm * timeinfo;
+  char buffer[20];
+  time (&rawtime);
+  timeinfo = localtime(&rawtime);
+  strftime(buffer,sizeof(buffer),"%Y%m%d_%H%M%S",timeinfo);
+  std::string str(buffer);
+  return str;
+}
+
 int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
@@ -114,8 +138,10 @@ int main(int argc, char** argv) {
   // Get the vector of legal actions
   const auto legal_actions = ale.getMinimalActionSet();
 
+  std::string log_dir = ".//save_model/" + TimeString();
+  CreateDir(log_dir.c_str());
   dqn::DQN dqn(legal_actions, FLAGS_solver, FLAGS_memory, FLAGS_gamma, FLAGS_verbose);
-  dqn.Initialize();
+  dqn.Initialize(log_dir);
 
   if (!FLAGS_model.empty()) {
     // Just evaluate the given trained model
@@ -137,13 +163,13 @@ int main(int argc, char** argv) {
   }
 
   int epoch = 0;
-  std::ofstream training_data(".//training_log.csv");
-  std::ofstream rom_info(".//save_model/rom_info.txt");
+  std::ofstream training_data(log_dir + "/training_log.csv");
+  std::ofstream rom_info(log_dir + "/rom_info.txt");
   rom_info << FLAGS_rom << std::endl;
   training_data << "Epoch,Evaluate score,Hours training" << std::endl;
   caffe::Timer run_timer;
 
-  for (auto episode = 0;; episode++) {
+  for (auto episode = 0; episode <1 ; episode++) {
     if (FLAGS_verbose)
       std::cout << "Episode: " << episode << std::endl;
     run_timer.Start();
