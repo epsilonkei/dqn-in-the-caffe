@@ -7,6 +7,7 @@
 #include <boost/algorithm/string.hpp>
 #include <glog/logging.h>
 #include "prettyprint.hpp"
+#include "util/copy.hpp"
 
 namespace dqn {
 
@@ -141,8 +142,7 @@ namespace dqn {
     std::ostringstream q_values_buf;
     for (auto i = 0; i < q_values.size(); ++i) {
       const auto a_str =
-        boost::algorithm::replace_all_copy(
-                                           action_to_string(actions[i]), "PLAYER_A_", "");
+        boost::algorithm::replace_all_copy(action_to_string(actions[i]), "PLAYER_A_", "");
       const auto q_str = std::to_string(q_values[i]);
       const auto column_size = std::max(a_str.size(), q_str.size()) + 1;
       actions_buf.width(column_size);
@@ -171,10 +171,15 @@ namespace dqn {
     net_->CopyTrainedLayersFrom(model_bin);
   }
 
-  void DQN::Initialize() {
+  void DQN::Initialize(std::string log_str) {
     // Initialize net and solver
     caffe::SolverParameter solver_param;
     caffe::ReadProtoFromTextFileOrDie(solver_param_, &solver_param);
+    solver_param.set_snapshot_prefix(log_str + "/" + solver_param.snapshot_prefix());
+    // Save solver's and network's prototxt
+    caffe::WriteProtoToTextFile(solver_param, log_str + "/dqn_solver.prototxt");
+    CopyFile(solver_param.net(), log_str + "/dqn.prototxt");
+
     // solver_.reset(caffe::GetSolver<float>(solver_param));
     solver_.reset(caffe::SolverRegistry<float>::CreateSolver(solver_param));
     net_ = solver_->net();
