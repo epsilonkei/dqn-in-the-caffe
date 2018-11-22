@@ -49,8 +49,7 @@ namespace dqn {
    */
   class DQN {
   public:
-    DQN(
-        const ActionVect& legal_actions,
+    DQN(const ActionVect& legal_actions,
         const std::string& solver_param,
         const int replay_memory_capacity,
         const double gamma,
@@ -100,8 +99,7 @@ namespace dqn {
     std::pair<Action, float> SelectActionGreedily(const InputFrames& last_frames);
     std::vector<std::pair<Action, float>> SelectActionGreedily(
                                                                const std::vector<InputFrames>& last_frames);
-    void InputDataIntoLayers(
-                             const FramesLayerInputData& frames_data,
+    void InputDataIntoLayers(const FramesLayerInputData& frames_data,
                              const TargetLayerInputData& target_data,
                              const FilterLayerInputData& filter_data);
 

@@ -34,8 +34,7 @@ double CalculateEpsilon(const int iter) {
 /**
  * Play one episode and return the total score
  */
-double PlayOneEpisode(
-                      ALEInterface& ale,
+double PlayOneEpisode(ALEInterface& ale,
                       dqn::DQN& dqn,
                       const double epsilon,
                       const bool update) {
@@ -79,8 +78,7 @@ double PlayOneEpisode(
         // Add the current transition to replay memory
         const auto transition = ale.game_over() ?
           dqn::Transition(input_frames, action, reward, boost::none) :
-          dqn::Transition(
-                          input_frames,
+          dqn::Transition(input_frames,
                           action,
                           reward,
                           dqn::PreprocessScreen(ale.getScreen()));
