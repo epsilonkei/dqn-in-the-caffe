@@ -51,15 +51,15 @@ namespace pretty_print
         private:
             template <typename C>
             static yes & f(typename std::enable_if<
-                std::is_same<decltype(static_cast<typename C::const_iterator(C::*)() const>(&C::begin)),
-                             typename C::const_iterator(C::*)() const>::value>::type *);
+                           std::is_same<decltype(static_cast<typename C::const_iterator(C::*)() const>(&C::begin)),
+                           typename C::const_iterator(C::*)() const>::value>::type *);
 
             template <typename C> static no & f(...);
 
             template <typename C>
             static yes & g(typename std::enable_if<
-                std::is_same<decltype(static_cast<typename C::const_iterator(C::*)() const>(&C::end)),
-                             typename C::const_iterator(C::*)() const>::value, void>::type*);
+                           std::is_same<decltype(static_cast<typename C::const_iterator(C::*)() const>(&C::end)),
+                           typename C::const_iterator(C::*)() const>::value, void>::type*);
 
             template <typename C> static no & g(...);
 
@@ -89,7 +89,7 @@ namespace pretty_print
     struct delimiters
     {
         using type = delimiters_values<TChar>;
-        static const type values; 
+        static const type values;
     };
 
 
@@ -118,22 +118,22 @@ namespace pretty_print
                 const auto the_end = end(c);
 
                 if (it != the_end)
-                {
-                    for ( ; ; )
                     {
-                        stream << *it;
+                        for ( ; ; )
+                            {
+                                stream << *it;
 
-                    if (++it == the_end) break;
+                                if (++it == the_end) break;
 
-                    if (delimiters_type::values.delimiter != NULL)
-                        stream << delimiters_type::values.delimiter;
+                                if (delimiters_type::values.delimiter != NULL)
+                                    stream << delimiters_type::values.delimiter;
+                            }
                     }
-                }
             }
         };
 
         print_container_helper(const T & container)
-        : container_(container)
+            : container_(container)
         { }
 
         inline void operator()(ostream_type & stream) const
@@ -211,8 +211,8 @@ namespace pretty_print
 
     template<typename T, typename TChar, typename TCharTraits, typename TDelimiters>
     inline std::basic_ostream<TChar, TCharTraits> & operator<<(
-        std::basic_ostream<TChar, TCharTraits> & stream,
-        const print_container_helper<T, TChar, TCharTraits, TDelimiters> & helper)
+                                                               std::basic_ostream<TChar, TCharTraits> & stream,
+                                                               const print_container_helper<T, TChar, TCharTraits, TDelimiters> & helper)
     {
         helper(stream);
         return stream;
@@ -433,7 +433,7 @@ namespace std
 
     template<typename T, typename TChar, typename TCharTraits>
     inline typename enable_if< ::pretty_print::is_container<T>::value,
-                              basic_ostream<TChar, TCharTraits> &>::type
+                               basic_ostream<TChar, TCharTraits> &>::type
     operator<<(basic_ostream<TChar, TCharTraits> & stream, const T & container)
     {
         return stream << ::pretty_print::print_container_helper<T, TChar, TCharTraits>(container);
@@ -443,4 +443,3 @@ namespace std
 
 
 #endif  // H_PRETTY_PRINT
-

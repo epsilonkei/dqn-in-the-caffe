@@ -35,10 +35,10 @@ double CalculateEpsilon(const int iter) {
  * Play one episode and return the total score
  */
 double PlayOneEpisode(
-    ALEInterface& ale,
-    dqn::DQN& dqn,
-    const double epsilon,
-    const bool update) {
+                      ALEInterface& ale,
+                      dqn::DQN& dqn,
+                      const double epsilon,
+                      const bool update) {
   assert(!ale.game_over());
   std::deque<dqn::FrameDataSp> past_frames;
   auto total_score = 0.0;
@@ -72,18 +72,18 @@ double PlayOneEpisode(
       // Rewards for DQN are normalized as follows:
       // 1 for any positive score, -1 for any negative score, otherwise 0
       const auto reward =
-          immediate_score == 0 ?
-              0 :
-              immediate_score /= std::abs(immediate_score);
+        immediate_score == 0 ?
+        0 :
+        immediate_score /= std::abs(immediate_score);
       if (update) {
         // Add the current transition to replay memory
         const auto transition = ale.game_over() ?
-            dqn::Transition(input_frames, action, reward, boost::none) :
-            dqn::Transition(
-                input_frames,
-                action,
-                reward,
-                dqn::PreprocessScreen(ale.getScreen()));
+          dqn::Transition(input_frames, action, reward, boost::none) :
+          dqn::Transition(
+                          input_frames,
+                          action,
+                          reward,
+                          dqn::PreprocessScreen(ale.getScreen()));
         dqn.AddTransition(transition);
         // If the size of replay memory is enough, update DQN
         if (dqn.memory_size() > FLAGS_memory_threshold) {
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
     for (auto i = 0; i < FLAGS_repeat_games; ++i) {
       std::cout << "Game: " << i << std::endl;
       const auto score =
-          PlayOneEpisode(ale, dqn, FLAGS_evaluate_with_epsilon, false);
+        PlayOneEpisode(ale, dqn, FLAGS_evaluate_with_epsilon, false);
       std::cout << "Score: " << score << std::endl;
       total_score += score;
     }
