@@ -54,14 +54,20 @@ namespace dqn {
         const std::string& solver_param,
         const int replay_memory_capacity,
         const double gamma,
-        const bool verbose) :
+        const bool verbose,
+        const std::string& q_log,
+        const int steps_for_log) :
       legal_actions_(legal_actions),
       solver_param_(solver_param),
       replay_memory_capacity_(replay_memory_capacity),
       gamma_(gamma),
       current_iter_(0),
       random_engine(0),
-      verbose_(verbose){}
+      verbose_(verbose),
+      q_log_(q_log),
+      steps_for_log_(steps_for_log),
+      q_count(0),
+      q_sum(0.0){}
 
     /**
      * Initialize DQN. Must be called before calling any other method.
@@ -92,6 +98,11 @@ namespace dqn {
      * Update DQN using one minibatch
      */
     void Update();
+
+    /**
+     * Close QValues log
+     */
+    void CloseQLog();
 
     int memory_size() const { return replay_memory_.size(); }
     int current_iteration() const { return current_iter_; }
@@ -124,6 +135,10 @@ namespace dqn {
     TargetLayerInputData dummy_input_data_;
     std::mt19937 random_engine;
     bool verbose_;
+    std::ofstream q_log_;
+    const int steps_for_log_;
+    int q_count;
+    double q_sum;
   };
 
   /**

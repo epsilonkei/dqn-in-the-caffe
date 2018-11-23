@@ -129,7 +129,8 @@ int main(int argc, char** argv) {
 
   std::string log_dir = ".//save_model/" + TimeString();
   CreateDir(log_dir.c_str());
-  dqn::DQN dqn(legal_actions, FLAGS_solver, FLAGS_memory, FLAGS_gamma, FLAGS_verbose);
+  dqn::DQN dqn(legal_actions, FLAGS_solver, FLAGS_memory, FLAGS_gamma, FLAGS_verbose,
+               log_dir + "/q_log.csv", FLAGS_steps_per_epoch);
   dqn.Initialize(log_dir);
 
   if (!FLAGS_model.empty()) {
@@ -163,9 +164,9 @@ int main(int argc, char** argv) {
   std::ofstream eval_log(log_dir + "/eval_log.csv");
   std::ofstream rom_info(log_dir + "/rom_info.txt");
   rom_info << FLAGS_rom << std::endl;
-  eval_log << "Epoch,Evaluate score,Hours training" << std::endl;
-  train_log << "Epoch,Epoch avg score,Hours training,Number of episodes"
-    ",Episodes in epoch" << std::endl;
+  // eval_log << "Epoch,Evaluate score,Hours training" << std::endl;
+  // train_log << "Epoch,Epoch avg score,Hours training,Number of episodes"
+  //   ",Episodes in epoch" << std::endl;
   caffe::Timer run_timer;
 
   for (auto episode = 0;; episode++) {
@@ -198,8 +199,8 @@ int main(int argc, char** argv) {
       std::cout << "Estimated Time for 1 million iterations: "
                 << hours_for_million << " hours" << std::endl;
 
-      train_log << train_epoc_number << ", " << running_average << ", " << hours
-        << ", " << episode << ", " << epoch_episode_count << std::endl;
+      train_log << train_epoc_number << " " << running_average << " " << hours
+        << " " << episode << " " << epoch_episode_count << std::endl;
 
       epoch_total_score = 0.0;
       epoch_episode_count = 0;
@@ -210,7 +211,7 @@ int main(int argc, char** argv) {
       // Evaluate after every epoch evaluate the current strength
       eval_score = PlayOneEpisode(ale, dqn, 0.05, false);
       std::cout << "Evaluation score: " << eval_score << std::endl;
-      eval_log << eval_epoc << ", " << eval_score << ", " <<
+      eval_log << eval_epoc << " " << eval_score << " " <<
         run_timer.MilliSeconds() / 1000. / 3600. << std::endl;
       eval_epoc ++;
     }
@@ -219,4 +220,5 @@ int main(int argc, char** argv) {
   }
   train_log.close();
   eval_log.close();
+  dqn.CloseQLog();
 };
