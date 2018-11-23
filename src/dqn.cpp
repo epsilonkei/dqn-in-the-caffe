@@ -241,7 +241,7 @@ namespace dqn {
       }
     }
     InputDataIntoLayers(frames_input, dummy_input_data_, dummy_input_data_);
-    net_->Forward(nullptr);
+    net_->ForwardPrefilled(nullptr);
 
     std::vector<std::pair<Action, float>> results;
     results.reserve(last_frames_batch.size());
