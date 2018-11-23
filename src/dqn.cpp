@@ -266,6 +266,10 @@ namespace dqn {
       // Select the action with the maximum Q value
       const auto max_idx =
         std::distance(q_values.begin(), std::max_element(q_values.begin(), q_values.end()));
+      // Calculate average maximum predicted Q
+      q_count ++;
+      q_sum += q_values[max_idx];
+
       results.emplace_back(legal_actions_[max_idx], q_values[max_idx]);
     }
     return results;
@@ -348,6 +352,12 @@ namespace dqn {
       net_->layer_by_name("ip1_layer")->blobs().front()->data_at(1, 0, 0, 0);
     VLOG(1) << "ip2:" <<
       net_->layer_by_name("ip2_layer")->blobs().front()->data_at(1, 0, 0, 0);
+
+    if (current_iter_ % steps_for_log_ == 0) {
+      q_log_ << current_iter_ / steps_for_log_ << ' ' << q_sum / q_count << std::endl;
+      q_sum = 0.0;
+      q_count = 0;
+    }
   }
 
   void DQN::InputDataIntoLayers(const FramesLayerInputData& frames_input,
@@ -364,4 +374,7 @@ namespace dqn {
                                kMinibatchSize);
   }
 
+  void DQN::CloseQLog() {
+    q_log_.close();
+  }
 }
