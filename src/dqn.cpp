@@ -281,7 +281,8 @@ namespace dqn {
 
   void DQN::Update() {
     if (verbose_)
-      std::cout << "iteration: " << current_iter_++ << std::endl;
+      std::cout << "iteration: " << current_iter_ << std::endl;
+    current_iter_++;
 
     // Sample transitions from replay memory
     std::vector<int> transitions;
