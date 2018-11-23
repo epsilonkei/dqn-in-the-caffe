@@ -22,7 +22,8 @@ DEFINE_string(model, "", "Model file to load");
 DEFINE_bool(evaluate, false, "Evaluation mode: only playing a game, no updates");
 DEFINE_double(evaluate_with_epsilon, 0.05, "Epsilon value to be used in evaluation mode");
 DEFINE_double(repeat_games, 1, "Number of games played in evaluation mode");
-DEFINE_int32(eval_epis_per_epoch, 5000, "Number of episodes per epoch for evaluating while training");
+DEFINE_int32(steps_per_epoch, 5000, "Number of training and evaluating steps per epoch");
+DEFINE_int32(max_iter, 10000000, "Network stop training after max_iter number of iterations.");
 
 double CalculateEpsilon(const int iter) {
   if (iter < FLAGS_explore) {
@@ -150,32 +151,72 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  int epoch = 0;
-  std::ofstream training_data(log_dir + "/training_log.csv");
+  int eval_epoc = 0, train_epoc_number;
+  double epsilon;
+  double total_score = 0.0, train_score, epoch_total_score = 0.0, eval_score;
+  int epoch_episode_count = 0.0;
+  double total_time = 0.0, hours, hours_for_million;
+  int next_epoch_boundry = FLAGS_steps_per_epoch;
+  double running_average = 0.0, plot_average_discount = 0.05;
+
+  std::ofstream train_log(log_dir + "/train_log.csv");
+  std::ofstream eval_log(log_dir + "/eval_log.csv");
   std::ofstream rom_info(log_dir + "/rom_info.txt");
   rom_info << FLAGS_rom << std::endl;
-  training_data << "Epoch,Evaluate score,Hours training" << std::endl;
+  eval_log << "Epoch,Evaluate score,Hours training" << std::endl;
+  train_log << "Epoch,Epoch avg score,Hours training,Number of episodes"
+    ",Episodes in epoch" << std::endl;
   caffe::Timer run_timer;
 
-  for (auto episode = 0; episode <1 ; episode++) {
+  for (auto episode = 0;; episode++) {
     if (FLAGS_verbose)
       std::cout << "Episode: " << episode << std::endl;
     run_timer.Start();
 
-    const auto epsilon = CalculateEpsilon(dqn.current_iteration());
-    PlayOneEpisode(ale, dqn, epsilon, true);
+    epoch_episode_count++;
+    epsilon = CalculateEpsilon(dqn.current_iteration());
+    train_score = PlayOneEpisode(ale, dqn, epsilon, true);
+    epoch_total_score += train_score;
 
-    // Evaluate after every 10 episodes evaluate the current strength
-    if (dqn.current_iteration() % 10 == 0) {
-      const auto eval_score = PlayOneEpisode(ale, dqn, 0.05, false);
+    if (dqn.current_iteration() > 0)  // started training?
+      total_time += run_timer.MilliSeconds();
+
+    if (episode == 0)
+      running_average = train_score;
+    else
+      running_average = train_score*plot_average_discount
+        + running_average*(1.0-plot_average_discount);
+
+    if (dqn.current_iteration() >= next_epoch_boundry) {
+      hours =  total_time / 1000. / 3600.;
+      train_epoc_number = static_cast<int>((next_epoch_boundry)/FLAGS_steps_per_epoch);
+      hours_for_million = hours/(dqn.current_iteration()/1000000.0);
+      std::cout << "Epoch(" << train_epoc_number
+                << ":" << dqn.current_iteration() << "): "
+                << "average score " << running_average << " in "
+                << hours << " hour(s)" << std::endl;
+      std::cout << "Estimated Time for 1 million iterations: "
+                << hours_for_million << " hours" << std::endl;
+
+      train_log << train_epoc_number << ", " << running_average << ", " << hours
+        << ", " << episode << ", " << epoch_episode_count << std::endl;
+
+      epoch_total_score = 0.0;
+      epoch_episode_count = 0;
+
+      while (next_epoch_boundry < dqn.current_iteration())
+        next_epoch_boundry += FLAGS_steps_per_epoch;
+
+      // Evaluate after every epoch evaluate the current strength
+      eval_score = PlayOneEpisode(ale, dqn, 0.05, false);
       std::cout << "Evaluation score: " << eval_score << std::endl;
-      //  Output to log after every N episodes
-      if (dqn.current_iteration() % FLAGS_eval_epis_per_epoch == 0) {
-        training_data << epoch << ", " << eval_score << ", " <<
-          run_timer.MilliSeconds() / 1000. / 3600. << std::endl;
-        epoch++;
-      }
+      eval_log << eval_epoc << ", " << eval_score << ", " <<
+        run_timer.MilliSeconds() / 1000. / 3600. << std::endl;
+      eval_epoc ++;
     }
+
+    if (dqn.current_iteration() >= FLAGS_max_iter) break;
   }
-  training_data.close();
+  train_log.close();
+  eval_log.close();
 };
