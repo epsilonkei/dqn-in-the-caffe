@@ -16,7 +16,7 @@ link_directories(~/work/Arcade-Learning-Environment)
 #   link_directories(~/cudnn-6.5-linux-R1)
 # endif()
 
-add_executable(dqn src/dqn_main.cpp src/dqn.cpp)
+add_executable(dqn src/dqn_main.cpp)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -march=native")
 

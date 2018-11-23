@@ -4,9 +4,8 @@
 #include <ale_interface.hpp>
 #include <glog/logging.h>
 #include <gflags/gflags.h>
-#include <sys/stat.h>
 #include "prettyprint.hpp"
-#include "dqn.hpp"
+#include "dqn.cpp"
 
 DEFINE_bool(verbose, false, "Verbose Output for each frame");
 DEFINE_bool(gpu, false, "Use GPU to brew Caffe");
@@ -94,17 +93,6 @@ double PlayOneEpisode(ALEInterface& ale,
   }
   ale.reset_game();
   return total_score;
-}
-
-void CreateDir(const char* directory) {
-  struct stat sb;
-  if (!stat(directory, &sb) == 0 || !S_ISDIR(sb.st_mode)) {
-    const int dir_err = mkdir(directory, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-      if (dir_err == -1) {
-         std::cerr <<"Error creating log directory!" << std::endl;
-         exit(1);
-      }
-  }
 }
 
 std::string TimeString() {
