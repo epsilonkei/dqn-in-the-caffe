@@ -10,6 +10,7 @@
 #include <caffe/caffe.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/optional.hpp>
+#include "util/linux_cmd.hpp"
 
 namespace dqn {
 
