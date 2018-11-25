@@ -10,6 +10,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -march=native")
 
+# Edit these paths to point to your caffe & ALE installations
+# when building caffe be sure and do "make distribute" (only necessary for old caffe)
 set(ALE_ROOT_DIR "~/work/Arcade-Learning-Environment")
 set(CAFFE_ROOT_DIR "~/caffe2")
 list(APPEND CMAKE_PREFIX_PATH ${ALE_ROOT_DIR} ${CAFFE_ROOT_DIR})
@@ -33,14 +35,6 @@ if(USE_CUDNN)
   message("Compile with cuDNN for Caffe")
 endif()
 
-find_package(CAFFE REQUIRED)
-include_directories(${CAFFE_INCLUDE_DIRS})
-target_link_libraries(dqn ${CAFFE_LIBRARIES})
-
-find_package(ALE REQUIRED)
-include_directories(${ALE_INCLUDE_DIRS})
-target_link_libraries(dqn ${ALE_LIBRARIES})
-
 option(USE_SDL "Use SDL for ALE" ON)
 if(USE_SDL)
   find_package(SDL REQUIRED)
@@ -48,6 +42,14 @@ if(USE_SDL)
   include_directories(${SDL_INCLUDE_DIR})
   target_link_libraries(dqn ${SDL_LIBRARY} ${SDL_MAIN_LIBRARY})
 endif()
+
+find_package(CAFFE REQUIRED)
+include_directories(${CAFFE_INCLUDE_DIRS})
+target_link_libraries(dqn ${CAFFE_LIBRARIES})
+
+find_package(ALE REQUIRED)
+include_directories(${ALE_INCLUDE_DIRS})
+target_link_libraries(dqn ${ALE_LIBRARIES})
 
 find_package(GFLAGS REQUIRED)
 include_directories(${GFLAGS_INCLUDE_DIR})
