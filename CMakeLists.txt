@@ -41,10 +41,6 @@ find_package(ALE REQUIRED)
 include_directories(${ALE_INCLUDE_DIRS})
 target_link_libraries(dqn ${ALE_LIBRARIES})
 
-find_package(Boost 1.40 COMPONENTS filesystem system iostreams regex REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(dqn ${Boost_LIBRARIES})
-
 option(USE_SDL "Use SDL for ALE" ON)
 if(USE_SDL)
   find_package(SDL REQUIRED)
