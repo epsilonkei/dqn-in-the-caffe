@@ -8,11 +8,11 @@ echo "YRANGE=$YRANGE";
 
 gnuplot <<EOF
 set terminal postscript eps color enhanced
-set tics font "Times New Roman,25"
+set tics font "Times New Roman,20"
 set xlabel font "Times New Roman,25"
-set ylabel font "Times New Roman,25"
+set ylabel font "Times New Roman,20"
 set zlabel font "Times New Roman,25"
-set key font "Times New Roman,25"
+set key font "Times New Roman,20"
 set key right top
 set key width 8
 set output "train_eval.eps"
@@ -27,11 +27,11 @@ EOF
 
 gnuplot <<EOF
 set terminal postscript eps color enhanced
-set tics font "Times New Roman,25"
+set tics font "Times New Roman,20"
 set xlabel font "Times New Roman,25"
-set ylabel font "Times New Roman,25"
+set ylabel font "Times New Roman,20"
 set zlabel font "Times New Roman,25"
-set key font "Times New Roman,25"
+set key font "Times New Roman,20"
 set key right top
 set key width 8
 set output "q_log.eps"
