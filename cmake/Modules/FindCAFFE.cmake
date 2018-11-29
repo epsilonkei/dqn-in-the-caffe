@@ -20,7 +20,7 @@ find_path(CAFFE_INCLUDE_DIR caffe/caffe.hpp
 find_library(CAFFE_LIBRARY caffe
   PATHS ${CAFFE_ROOT_DIR}
   PATH_SUFFIXES
-  distribute/lib)
+  build/lib)
 
 find_package_handle_standard_args(CAFFE DEFAULT_MSG
   CAFFE_INCLUDE_DIR CAFFE_LIBRARY)

@@ -11,7 +11,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -march=native")
 
 # Edit these paths to point to your caffe & ALE installations
-# when building caffe be sure and do "make distribute" (only necessary for old caffe)
 set(ALE_ROOT_DIR "~/work/Arcade-Learning-Environment")
 set(CAFFE_ROOT_DIR "~/caffe")
 list(APPEND CMAKE_PREFIX_PATH ${ALE_ROOT_DIR} ${CAFFE_ROOT_DIR})
