@@ -6,6 +6,7 @@
 #include <gflags/gflags.h>
 #include "prettyprint.hpp"
 #include "dqn.cpp"
+#include "util/stop_watch.hpp"
 
 DEFINE_bool(verbose, false, "Verbose Output for each frame");
 DEFINE_bool(gpu, false, "Use GPU to brew Caffe");
@@ -32,6 +33,10 @@ double CalculateEpsilon(const int iter) {
     return 0.1;
   }
 }
+
+#if ENABLE_TIMER
+stop_watch timer = stop_watch();
+#endif //ENABLE_TIMER
 
 /**
  * Play one episode and return the total score
@@ -63,7 +68,15 @@ double PlayOneEpisode(ALEInterface& ale,
       }
       dqn::InputFrames input_frames;
       std::copy(past_frames.begin(), past_frames.end(), input_frames.begin());
+#if ENABLE_TIMER
+      timer.start();
+#endif //ENABLE_TIMER
       const auto action = dqn.SelectAction(input_frames, epsilon);
+#if ENABLE_TIMER
+      timer.stop();
+      std::cerr << "Elapsed time: " << timer.getTime() << std::endl;
+      timer.reset();
+#endif //ENABLE_TIMER
       auto immediate_score = 0.0;
       for (auto i = 0; i < FLAGS_skip_frame + 1 && !ale.game_over(); ++i) {
         // Last action is repeated on skipped frames
